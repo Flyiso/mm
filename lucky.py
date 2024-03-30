@@ -1,7 +1,5 @@
 from game_values import GameParams
 from itertools import zip_longest
-from PIL import Image
-from array import array
 import random
 import pygame
 import sys
@@ -190,6 +188,7 @@ class RollColors:
         self.t_l, self.t_r, self.b_l, self.b_r = field_coords
         self.colors = colors
         self.start = random.choice(colors)
+
     def get_images(self):
         pass
 
@@ -204,7 +203,8 @@ class ColorSlides:
     """
     Class to generate color slides to loop through
     """
-    def __init__(self, active_colors: list, height, width) -> None:
+    def __init__(self, active_colors: list, height, 
+                 width, field_coords: list) -> None:
         self.height = height
         self.width = width
         self.colors = [color() for color in active_colors]
@@ -214,24 +214,11 @@ class ColorSlides:
             color_places.append(-col)
         color_places.sort()
         self.color_places = color_places
+        self.t_l, self.t_r, self.b_l, self.b_r = field_coords
 
     def get_images(self):
         for color_id, color in enumerate(self.colors):
             for frame_id, color_view in enumerate(self.color_places):
                 w, h = (self.width/2, self.height + color_view)
-                pixels = array('B', [0] * (w * h * 4))
-                for i in range(w * h):
-                    pixels[i * 4] = 0 
-                    pixels[i * 4 + 1] = 0 
-                    pixels[i * 4 + 2] = 0 
-                    pixels[i * 4 + 3] = 0 
-                frame_name = f'{color_id}_{frame_id}_{color.name}'
-
-    def draw_circle(self, height, width, radius, color):
-        for y in range(width - radius, width + radius + 1):
-            for x in range(height - radius, height + radius + 1):
-                if (x - height) ** 2 + (y - width) ** 2 <= radius ** 2:
-                    set_pixel(x, y, color)
-
 
 Board(GameParams(7, 5))

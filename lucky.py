@@ -1,5 +1,6 @@
 from game_values import GameParams
 from itertools import zip_longest
+from PIL import Image, ImageDraw
 import random
 import pygame
 import sys
@@ -153,6 +154,14 @@ class Board:
                              (self.display_bottom_left[0] +
                               (self.roller_width_bottom * n),
                               self.display_bottom_left[1]), 3)
+        self.field_width = (int(self.display_bottom_right[0] +
+                                self.display_top_right[0]) -
+                            (int(self.display_bottom_left[0] +
+                                 self.display_top_left[0]) / 2))
+        self.field_height = ((int(self.display_bottom_left[1] +
+                                  self.display_top_left[1]) / 2) -
+                             (int(self.display_bottom_left[1] +
+                                  self.display_top_left[1]) / 2))
         return screen
 
     def draw_buttons(self, screen):
@@ -178,13 +187,33 @@ class RollColors:
         self.t_l, self.t_r, self.b_l, self.b_r = field_coords
         self.colors = colors
         self.start = random.choice(colors)
-    
+    def get_images(self):
+        pass
+
     def spin(self):
         pass
 
     def current_image(self):
         pass
 
+
+class ColorSlides:
+    """
+    Class to generate color slides to loop through
+    """
+    def __init__(self, active_colors: list, height, width) -> None:
+        self.height = height
+        self.width = width
+        self.colors = [color() for color in active_colors]
+        self.n_val_shown = self.height/self.width
+
+    def get_images(self):
+        for c_id, color in enumerate(self.colors):
+            for color_view in range(10):
+                frame = Image.new('RGBA',
+                                  (self.height, self.width),
+                                  (0, 0, 0, 0))
+                frame_name = f'{color.name}_{color_view}'
 
 
 Board(GameParams(7, 5))

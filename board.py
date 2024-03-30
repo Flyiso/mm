@@ -4,10 +4,7 @@ uses parameters for width(how many colors to guess)
 height(total/maximum amount of guesses per turn),
 active colors(how many different colors are active in game)
 """
-from game_values import GameParams
-from itertools import zip_longest
-import pygame
-import sys
+
 
 
 class Board:

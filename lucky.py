@@ -1,6 +1,7 @@
 from game_values import GameParams
 from itertools import zip_longest
-from PIL import Image, ImageDraw
+from PIL import Image
+from array import array
 import random
 import pygame
 import sys
@@ -41,6 +42,7 @@ class Board:
             screen = self.draw_grid(screen)
             screen = self.draw_background(screen)
             screen = self.draw_display(screen)
+            ColorSlides(self.active_colors, self.field_height, self.field_width)
             screen = self.draw_roller_fields(screen)
             pygame.display.flip()
 
@@ -128,14 +130,22 @@ class Board:
                                                  self.display_top_right,
                                                  self.display_bottom_right,
                                                  self.display_bottom_left))
-        return screen
-
-    def draw_roller_fields(self, screen):
         self.roller_width_top = (self.display_top_right[0] -
                                  self.display_top_left[0]) / self.board_width
         self.roller_width_bottom = (self.display_bottom_right[0] -
                                     self.display_bottom_left[0]
                                     ) / self.board_width
+        self.field_width = (int(self.display_bottom_right[0] +
+                                self.display_top_right[0]) -
+                            (int(self.display_bottom_left[0] +
+                                 self.display_top_left[0]) / 2))
+        self.field_height = ((int(self.display_bottom_left[1] +
+                                  self.display_top_left[1]) / 2) -
+                             (int(self.display_bottom_left[1] +
+                                  self.display_top_left[1]) / 2))
+        return screen
+
+    def draw_roller_fields(self, screen):
         pygame.draw.line(screen, self.red,
                          (int(self.display_bottom_left[0] +
                           self.display_top_left[0]) / 2,
@@ -154,14 +164,7 @@ class Board:
                              (self.display_bottom_left[0] +
                               (self.roller_width_bottom * n),
                               self.display_bottom_left[1]), 3)
-        self.field_width = (int(self.display_bottom_right[0] +
-                                self.display_top_right[0]) -
-                            (int(self.display_bottom_left[0] +
-                                 self.display_top_left[0]) / 2))
-        self.field_height = ((int(self.display_bottom_left[1] +
-                                  self.display_top_left[1]) / 2) -
-                             (int(self.display_bottom_left[1] +
-                                  self.display_top_left[1]) / 2))
+
         return screen
 
     def draw_buttons(self, screen):
@@ -205,15 +208,30 @@ class ColorSlides:
         self.height = height
         self.width = width
         self.colors = [color() for color in active_colors]
-        self.n_val_shown = self.height/self.width
+        self.n_val_shown = self.height//self.width+2
+        color_places = [(((width/2)/5) * n) for n in range(0, 6)]
+        for col in color_places[1:]:
+            color_places.append(-col)
+        color_places.sort()
+        self.color_places = color_places
 
     def get_images(self):
-        for c_id, color in enumerate(self.colors):
-            for color_view in range(10):
-                frame = Image.new('RGBA',
-                                  (self.height, self.width),
-                                  (0, 0, 0, 0))
-                frame_name = f'{color.name}_{color_view}'
+        for color_id, color in enumerate(self.colors):
+            for frame_id, color_view in enumerate(self.color_places):
+                w, h = (self.width/2, self.height + color_view)
+                pixels = array('B', [0] * (w * h * 4))
+                for i in range(w * h):
+                    pixels[i * 4] = 0 
+                    pixels[i * 4 + 1] = 0 
+                    pixels[i * 4 + 2] = 0 
+                    pixels[i * 4 + 3] = 0 
+                frame_name = f'{color_id}_{frame_id}_{color.name}'
+
+    def draw_circle(self, height, width, radius, color):
+        for y in range(width - radius, width + radius + 1):
+            for x in range(height - radius, height + radius + 1):
+                if (x - height) ** 2 + (y - width) ** 2 <= radius ** 2:
+                    set_pixel(x, y, color)
 
 
 Board(GameParams(7, 5))

@@ -33,7 +33,8 @@ class Board:
         self.black = (0, 0, 0)
         self.gray = (125, 125, 241)
         self.red = (225, 50, 50)
-        self.line_color = (255, 255, 255)
+        self.green = (50, 255, 25)
+        self.line_color = (225, 225, 225)
 
         running = True
         while running:
@@ -47,6 +48,7 @@ class Board:
             screen = self.draw_background(screen)
             screen = self.draw_display(screen)
             screen = self.draw_roller_fields(screen)
+            screen = self.draw_buttons(screen)
             pygame.display.flip()
 
             # Cap the frame rate
@@ -113,11 +115,6 @@ class Board:
                                                  self.display_top_right,
                                                  self.display_bottom_right,
                                                  self.display_bottom_left))
-        self.roller_width_top = (self.display_top_right[0] -
-                                 self.display_top_left[0]) / self.board_width
-        self.roller_width_bottom = (self.display_bottom_right[0] -
-                                    self.display_bottom_left[0]
-                                    ) / self.board_width
         return screen
 
     def draw_roller_fields(self, screen):
@@ -143,9 +140,17 @@ class Board:
         return screen
 
     def draw_buttons(self, screen):
+        pygame.draw.rect(screen, self.green, (
+            self.button_start_width, self.button_height,
+            self.button_size, self.button_size), 0, 2)
+
+        pygame.draw.rect(screen, self.red, (
+            self.button_end_width, self.button_height,
+            self.button_size, self.button_size), 0, 2)
         return screen
 
     def set_screen_values(self, info):
+        # grid for guesses display and frame settings.
         self.screen_height = info.current_h
         self.cell_size = ((self.screen_height * 0.67)/self.board_height) * 0.97
         self.screen_width = ((self.cell_size * 1.02) * self.board_width)
@@ -181,6 +186,19 @@ class Board:
                             / self.board_width)
         self.field_height = (int(self.display_bottom_left[1] +
                                  self.display_top_left[1]) / 2)
+
+        self.roller_width_top = (self.display_top_right[0] -
+                                 self.display_top_left[0]) / self.board_width
+        self.roller_width_bottom = (self.display_bottom_right[0] -
+                                    self.display_bottom_left[0]
+                                    ) / self.board_width
+
+        # Button placement
+        self.button_height = \
+            self.display_bottom_left[1]+(self.screen_height//15)
+        self.button_size = self.screen_height//20
+        self.button_start_width = self.screen_width-(self.button_size*3)
+        self.button_end_width = self.button_start_width+(self.button_size*1.5)
 
 
 Board(GameParams(7, 5))

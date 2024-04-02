@@ -48,6 +48,7 @@ class Board:
             # draw background.
             screen.fill(self.black)
             screen = self.draw_grid(screen)
+            screen = self.draw_guesses(screen)
             screen = self.draw_background(screen)
             screen = self.draw_display(screen)
             screen = self.draw_roller_fields(screen)
@@ -88,6 +89,23 @@ class Board:
                               self.padding_lft_rgt+(
                               self.cell_size*self.board_height)
                               ))
+        return screen
+
+    def draw_guesses(self, screen):
+        """
+        Print guesses in grid.
+        """
+        for id_g, guess_sequence in enumerate(self.guesses, 0):
+            for id_c, c in enumerate([c() for c in guess_sequence], 0):
+                center_w = self.padding_lft_rgt+((id_c*self.cell_size)
+                                                 + self.cell_size/2)
+                center_h = ((self.padding_lft_rgt+(self.cell_size *
+                                                   self.board_height) -
+                            self.cell_size/2) -
+                            (self.cell_size*id_g))
+                pygame.draw.circle(screen, c.value,
+                                   (center_w, center_h),
+                                   (self.cell_size/2)*0.8)
         return screen
 
     def draw_background(self, screen):

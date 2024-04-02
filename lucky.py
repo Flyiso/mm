@@ -25,6 +25,9 @@ class Board:
 
         ColorSlides(self.active_colors, self.field_height,
                     self.field_height)
+        directory_path = os.path.join(os.getcwd(), 'frames')
+        spin_frames = [pygame.image.load(os.path.join(directory_path, frame))
+                       for frame in os.listdir(directory_path)]
 
         screen = pygame.display.set_mode((self.screen_width,
                                          self.screen_height))

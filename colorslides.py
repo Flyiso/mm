@@ -89,6 +89,10 @@ class ColorSlides:
                 list of colors(GameParams.Color) visible below
                 center color.(firs one closest to main color)
         """
+        if len(str(color_index)) == 1:
+            color_index = f'0{color_index}'
+        if len(str(frame_index)) == 1:
+            frame_index = f'0{frame_index}'
         folder_path = 'frames'
         if not os.path.exists(folder_path):
             os.makedirs(folder_path)

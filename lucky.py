@@ -3,6 +3,7 @@ from itertools import zip_longest
 import random
 import pygame
 import sys
+from PIL import Image
 
 
 class Board:
@@ -40,7 +41,8 @@ class Board:
             screen = self.draw_grid(screen)
             screen = self.draw_background(screen)
             screen = self.draw_display(screen)
-            ColorSlides(self.active_colors, self.field_height, self.field_width)
+            ColorSlides(self.active_colors, self.field_height,
+                        self.field_width, (1, 1, 2, 3))
             screen = self.draw_roller_fields(screen)
             pygame.display.flip()
 
@@ -203,8 +205,25 @@ class ColorSlides:
     """
     Class to generate color slides to loop through
     """
-    def __init__(self, active_colors: list, height, 
-                 width, field_coords: list) -> None:
+    def __init__(self, active_colors: list, height,
+                 width, field_coords: list | tuple) -> None:
+        """
+        Create images to use for color slides animations.
+
+        Parameters:
+            active_colors (list[GameParams.Color]):
+                    List of currently, in game, active colors.
+                    List content should be color objects from
+                    Color class in game_values.py 
+            height (int):
+                    height of the field to create images for.
+            width (int):
+                    width of the field to create images for.
+            field_coords (list|tuple):
+                    locations for each corner of the field
+                    to make images shape adjust to the relevant
+                    quadrilateral field.
+        """
         self.height = height
         self.width = width
         self.colors = [color() for color in active_colors]
@@ -215,8 +234,13 @@ class ColorSlides:
         color_places.sort()
         self.color_places = color_places
         self.t_l, self.t_r, self.b_l, self.b_r = field_coords
+        print(color_places)
 
     def get_images(self):
+        """
+        Loop through each color, and each position in animation
+        each color can have to create images for animation.
+        """
         for color_id, color in enumerate(self.colors):
             for frame_id, color_view in enumerate(self.color_places):
                 w, h = (self.width/2, self.height + color_view)

@@ -227,14 +227,14 @@ class ColorSlides:
         self.height = height
         self.width = width
         self.colors = [color() for color in active_colors]
-        self.n_val_shown = self.height//self.width+2
-        color_places = [(((width/2)/5) * n) for n in range(0, 6)]
-        for col in color_places[1:]:
-            color_places.append(-col)
-        color_places.sort()
-        self.color_places = color_places
+        self.n_val_shown = (self.height//self.width)+2
+        color_height_adjust = [(((width/2)/5) * n) for n in range(0, 6)]
+        for col in color_height_adjust[1:]:
+            color_height_adjust.append(-col)
+        color_height_adjust.sort()
+        self.color_height_adjust = color_height_adjust
         self.t_l, self.t_r, self.b_l, self.b_r = field_coords
-        print(color_places)
+        print(color_height_adjust)
 
     def get_images(self):
         """

@@ -135,14 +135,15 @@ class Board:
         self.roller_width_bottom = (self.display_bottom_right[0] -
                                     self.display_bottom_left[0]
                                     ) / self.board_width
-        self.field_width = (int(self.display_bottom_right[0] +
-                                self.display_top_right[0]) -
+
+        self.field_width = ((int(self.display_bottom_right[0] +
+                                 self.display_top_right[0]) -
                             (int(self.display_bottom_left[0] +
                                  self.display_top_left[0]) / 2))
-        self.field_height = ((int(self.display_bottom_left[1] +
-                                  self.display_top_left[1]) / 2) -
-                             (int(self.display_bottom_left[1] +
-                                  self.display_top_left[1]) / 2))
+                            / self.board_width)
+
+        self.field_height = (int(self.display_bottom_left[1] +
+                                 self.display_top_left[1]) / 2)
         return screen
 
     def draw_roller_fields(self, screen):
@@ -217,24 +218,28 @@ class ColorSlides:
                     Color class in game_values.py 
             height (int):
                     height of the field to create images for.
+                    set height of the image (from 0)
             width (int):
                     width of the field to create images for.
+                    sets width of the image (from 0)
             field_coords (list|tuple):
                     locations for each corner of the field
                     to make images shape adjust to the relevant
-                    quadrilateral field.
+                    quadrilateral field. 
+                    defines where in the frame/pygame window the
+                    image should go.
         """
         self.height = height
         self.width = width
         self.colors = [color() for color in active_colors]
         self.n_val_shown = (self.height//self.width)+2
-        color_height_adjust = [(((width/2)/5) * n) for n in range(0, 6)]
-        for col in color_height_adjust[1:]:
-            color_height_adjust.append(-col)
-        color_height_adjust.sort()
-        self.color_height_adjust = color_height_adjust
+        height_adjust = [(((width/2)/5) * n) for n in range(0, 6)]
+        for col in height_adjust[1:]:
+            height_adjust.append(-col)
+        height_adjust.sort()
+        self.height_adjust = height_adjust
         self.t_l, self.t_r, self.b_l, self.b_r = field_coords
-        print(color_height_adjust)
+        self.get_images()
 
     def get_images(self):
         """
@@ -242,7 +247,23 @@ class ColorSlides:
         each color can have to create images for animation.
         """
         for color_id, color in enumerate(self.colors):
-            for frame_id, color_view in enumerate(self.color_places):
-                w, h = (self.width/2, self.height + color_view)
+            for frame_id, height_adjustment in enumerate(self.height_adjust):
+                active_slot_width, active_slot_height = \
+                    (self.width/2, self.height/2 + height_adjustment)
+                slots_up = -(active_slot_height // -self.width)
+                slots_down = -((self.height-active_slot_height) // -self.width)
+                up_colors = [self.colors[color_id-(slot+1)] if
+                             color_id-(slot+1) >= -(len(self.colors)) else
+                             self.colors[
+                                 (color_id-((slot)+1)) +
+                                 (len(self.colors)*(color_id-(slot+1)) //
+                                  len(self.colors))]
+                             for slot in range(int(slots_up))]
+
+                down_colors = [self.colors[color_id+(slot+1)] if
+                               color_id+slot+1 <= len(self.colors)-1 else
+                               self.colors[
+                                   (color_id+slot+1)-(len(self.colors))]
+                               for slot in range(int(slots_down))]
 
 Board(GameParams(7, 5))

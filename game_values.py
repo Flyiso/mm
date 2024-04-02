@@ -4,7 +4,6 @@ generates active colors, the winning sequence
 and values(name, channels) for each color.
 """
 
-
 import random
 
 

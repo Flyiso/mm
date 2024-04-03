@@ -261,22 +261,12 @@ class RollField(object):
                     self.main_bottom_left[0], self.main_bottom_right[0])
 
         self.width_start = (min(self.main_top_left[0],
-                            self.main_bottom_left[0]))
+                            self.main_bottom_left[0], 
+                            self.main_bottom_right[0],
+                            self.main_top_right[0]))
         self.height_start = self.main_top_left[1]
         frame_vals = cv2.imread(frames[1])
         frame_vals = frame_vals.shape
-        print(frame_vals)
-        print((self.main_bottom_left[0]-self.width_start,
-                         self.main_bottom_left[1]-self.height_start),
-                        (self.main_bottom_right[0]-self.width_start+width_btm,
-                         self.main_bottom_right[1]-self.height_start),
-                        (self.main_top_left[0]-self.width_start,
-                         self.main_top_left[1]-self.height_start),
-                        (self.main_top_right[0]-self.width_start,
-                         self.main_top_right[1]-self.height_start))
-        print([0, frame_vals[1]], [width, frame_vals[1]],
-                        [0, 0], [width, 0])
-
 
         self.matrix = cv2.getPerspectiveTransform(
             np.float32([[0, frame_vals[0]], [frame_vals[1], frame_vals[0]],
@@ -302,14 +292,13 @@ class RollField(object):
         """
         return frame to fit coordinate proportions
         """
-        frame = cv2.imread(frame)
+        frame = cv2.imread(frame, cv2.IMREAD_UNCHANGED)
         frame = cv2.warpPerspective(frame, self.matrix,
                                     (frame.shape[1], frame.shape[0]),
                                     flags=cv2.INTER_NEAREST)
         return pygame.image.frombuffer(frame.tobytes(),
-                                       (frame.shape[1],
-                                        frame.shape[0]),
-                                       'RGB')
+                                       frame.shape[1::-1],
+                                       'RGBA')
 
     def draw_roller_on_frame(self, frame):
         """

@@ -45,7 +45,9 @@ class Board:
                 bottom_right=(self.display_bottom_left[0] +
                               (self.roller_width_bottom * (field + 1)),
                               self.display_bottom_right[1]),
-                frames=self.spin_frames_routes))
+                frames=self.spin_frames_routes,
+                width_top=int(self.roller_width_top),
+                width_btm=int(self.roller_width_bottom)))
 
         screen = pygame.display.set_mode((self.screen_width,
                                          self.screen_height))
@@ -246,7 +248,7 @@ class Board:
 class RollField(object):
     def __init__(self, top_left: tuple, top_right: tuple,
                  bottom_left: tuple, bottom_right: tuple,
-                 frames: list):
+                 frames: list, width_top: int, width_btm: int):
         """
         create roll object with perspective transformed
         version of frame to make frame fit roll field
@@ -256,21 +258,28 @@ class RollField(object):
         self.main_bottom_left = (int(bottom_left[0]), int(bottom_left[1]))
         self.main_bottom_right = (int(bottom_right[0]), int(bottom_right[1]))
 
-        width_start = (min(self.main_top_left[0],
-                           self.main_bottom_left[0]))
-        height_start = self.main_top_left[1]
+        self.width_start = (min(self.main_top_left[0],
+                            self.main_bottom_left[0]))
+        self.height_start = self.main_top_left[1]
+        frame_vals = cv2.imread(frames[1])
+        frame_vals = frame_vals.shape
 
         self.matrix = cv2.getPerspectiveTransform(
-            np.float32([self.main_top_left, self.main_top_right,
-                        self.main_bottom_left, self.main_bottom_right]),
-            np.float32([(self.main_top_left[0]-width_start,
-                        self.main_top_left[1]-height_start),
-                        (self.main_top_right[0]-width_start,
-                        self.main_top_right[1]-height_start),
-                        (self.main_bottom_left[0]-width_start,
-                        self.main_bottom_left[1]-height_start),
-                        (self.main_bottom_right[0]-width_start,
-                        self.main_bottom_right[1]-height_start)]))
+            np.float32([[0, 0], [width_top, 0],
+                        [0, frame_vals[0]], [width_btm, frame_vals[0]]]),
+
+            np.float32([[self.main_top_left[0]-self.width_start,
+                        self.main_top_left[1]-self.height_start],
+
+                        [self.main_top_right[0]-self.width_start,
+                        self.main_top_right[1]-self.height_start],
+
+                        [self.main_bottom_left[0]-self.width_start,
+                        self.main_bottom_left[1]-self.height_start],
+
+                        [self.main_bottom_right[0]-self.width_start,
+                        self.main_bottom_right[1]-self.height_start]])
+                        )
         self.frames = [self.adjust_frame(frame) for frame in frames]
         self.index_max = len(self.frames)-1
         self.current_index = 0
@@ -280,13 +289,11 @@ class RollField(object):
         return frame to fit coordinate proportions
         """
         frame = cv2.imread(frame)
-        print(frame.shape)
-        cv2.imwrite('cv2img.png', frame)
         frame = cv2.warpPerspective(frame, self.matrix,
-                                    (frame.shape[0], frame.shape[1]),
+                                    (frame.shape[1], frame.shape[0]),
                                     flags=cv2.INTER_NEAREST)
-        cv2.imwrite('frame_test.png', frame)
-        return pygame.image.frombuffer(frame.tobytes(), (frame.shape[1],frame.shape[0]),
+        return pygame.image.frombuffer(frame.tobytes(), (frame.shape[1],
+                                                         frame.shape[0]),
                                        'RGB')
 
     def draw_roller_on_frame(self, frame):
@@ -294,8 +301,9 @@ class RollField(object):
         Returns frame with roller drawn on it
         """
         frame = frame.blit(self.frames[self.current_index],
-                           (self.main_top_left))
+                           (self.width_start, self.height_start))
         self.current_index += 1
+        
         if self.current_index > self.index_max:
             self.current_index = 0
         return frame

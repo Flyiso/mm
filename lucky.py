@@ -16,18 +16,36 @@ class Board:
         self.active_colors = game_params.active_colors
         self.win_colors = game_params.correct
         self.guesses = []
+        self.roll_fields = []
         self.draw_board()
 
     def draw_board(self):
         pygame.init()
+        clock = pygame.time.Clock()
         info = pygame.display.Info()
         self.set_screen_values(info)
 
         ColorSlides(self.active_colors, self.field_height,
                     self.field_height)
         directory_path = os.path.join(os.getcwd(), 'frames')
-        spin_frames = [pygame.image.load(os.path.join(directory_path, frame))
-                       for frame in os.listdir(directory_path)]
+        self.spin_frames = [pygame.image.load(os.path.join(directory_path,
+                                                           frame))
+                            for frame in os.listdir(directory_path)]
+        for field in range(int(self.board_width)):
+            self.roll_fields.append(RollField(
+                top_left=(self.display_top_left[0] +
+                          (self.roller_width_top * field),
+                          self.display_top_left[1]),
+                top_right=(self.display_top_left[0] +
+                           self.roller_width_top * (field+1),
+                           self.display_top_right[1]),
+                bottom_left=(self.display_bottom_left[0] +
+                             (self.roller_width_bottom * field),
+                             self.display_bottom_left[1]),
+                bottom_right=(self.display_bottom_left[0] +
+                              (self.roller_width_bottom * (field + 1)),
+                              self.display_bottom_right[1]),
+                frames=self.spin_frames))
 
         screen = pygame.display.set_mode((self.screen_width,
                                          self.screen_height))
@@ -56,7 +74,8 @@ class Board:
             pygame.display.flip()
 
             # Cap the frame rate
-            pygame.time.Clock().tick(60)
+            #pygame.time.Clock().tick(60)
+            clock.tick(30)
 
         # Remove directory of images.
         if os.path.exists('frames'):
@@ -220,6 +239,28 @@ class Board:
         self.button_size = self.screen_height//20
         self.button_start_width = self.screen_width-(self.button_size*3)
         self.button_end_width = self.button_start_width+(self.button_size*1.5)
+
+
+class RollField(object):
+    def __init__(self, top_left: tuple, top_right: tuple,
+                 bottom_left: tuple, bottom_right: tuple,
+                 frames: list):
+        """
+        create roll object with perspective transformed
+        version of frame to make frame fit roll field
+        """
+        print('------------------')
+        self.frames = frames
+        self.top_left = (int(top_left[0]), int(top_left[1]))
+        self.top_right = (int(top_right[0]), int(top_right[1]))
+        self.bottom_left = (int(bottom_left[0]), int(bottom_left[1]))
+        self.bottom_right = (int(bottom_right[0]), int(bottom_right[1]))
+        print(self.top_left, self.top_right)
+        print(self.bottom_left, self.bottom_right)
+        print('-----------------')
+
+    def adjust_frames(self):
+        pass
 
 
 Board(GameParams(7, 5))

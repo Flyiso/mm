@@ -1,11 +1,13 @@
 from colorslides import ColorSlides
 from game_values import GameParams
 from itertools import zip_longest
+import numpy as np
 import shutil
 import random
 import pygame
 import sys
 import os
+import cv2
 
 
 class Board:
@@ -24,13 +26,11 @@ class Board:
         clock = pygame.time.Clock()
         info = pygame.display.Info()
         self.set_screen_values(info)
-
         ColorSlides(self.active_colors, self.field_height,
-                    self.field_height)
+                    self.field_width)
         directory_path = os.path.join(os.getcwd(), 'frames')
-        self.spin_frames = [pygame.image.load(os.path.join(directory_path,
-                                                           frame))
-                            for frame in os.listdir(directory_path)]
+        self.spin_frames_routes = [(os.path.join(directory_path, frame))
+                                   for frame in os.listdir(directory_path)]
         for field in range(int(self.board_width)):
             self.roll_fields.append(RollField(
                 top_left=(self.display_top_left[0] +
@@ -45,7 +45,7 @@ class Board:
                 bottom_right=(self.display_bottom_left[0] +
                               (self.roller_width_bottom * (field + 1)),
                               self.display_bottom_right[1]),
-                frames=self.spin_frames))
+                frames=self.spin_frames_routes))
 
         screen = pygame.display.set_mode((self.screen_width,
                                          self.screen_height))
@@ -69,12 +69,14 @@ class Board:
             screen = self.draw_guesses(screen)
             screen = self.draw_background(screen)
             screen = self.draw_display(screen)
+            [roll_field.draw_roller_on_frame(screen) for
+             roll_field in self.roll_fields]
             screen = self.draw_roller_fields(screen)
             screen = self.draw_buttons(screen)
             pygame.display.flip()
 
             # Cap the frame rate
-            #pygame.time.Clock().tick(60)
+            # pygame.time.Clock().tick(60)
             clock.tick(30)
 
         # Remove directory of images.
@@ -249,18 +251,55 @@ class RollField(object):
         create roll object with perspective transformed
         version of frame to make frame fit roll field
         """
-        print('------------------')
-        self.frames = frames
-        self.top_left = (int(top_left[0]), int(top_left[1]))
-        self.top_right = (int(top_right[0]), int(top_right[1]))
-        self.bottom_left = (int(bottom_left[0]), int(bottom_left[1]))
-        self.bottom_right = (int(bottom_right[0]), int(bottom_right[1]))
-        print(self.top_left, self.top_right)
-        print(self.bottom_left, self.bottom_right)
-        print('-----------------')
+        self.main_top_left = (int(top_left[0]), int(top_left[1]))
+        self.main_top_right = (int(top_right[0]), int(top_right[1]))
+        self.main_bottom_left = (int(bottom_left[0]), int(bottom_left[1]))
+        self.main_bottom_right = (int(bottom_right[0]), int(bottom_right[1]))
 
-    def adjust_frames(self):
-        pass
+        width_start = (min(self.main_top_left[0],
+                           self.main_bottom_left[0]))
+        height_start = self.main_top_left[1]
+
+        self.matrix = cv2.getPerspectiveTransform(
+            np.float32([self.main_top_left, self.main_top_right,
+                        self.main_bottom_left, self.main_bottom_right]),
+            np.float32([(self.main_top_left[0]-width_start,
+                        self.main_top_left[1]-height_start),
+                        (self.main_top_right[0]-width_start,
+                        self.main_top_right[1]-height_start),
+                        (self.main_bottom_left[0]-width_start,
+                        self.main_bottom_left[1]-height_start),
+                        (self.main_bottom_right[0]-width_start,
+                        self.main_bottom_right[1]-height_start)]))
+        self.frames = [self.adjust_frame(frame) for frame in frames]
+        self.index_max = len(self.frames)-1
+        self.current_index = 0
+
+    def adjust_frame(self, frame):
+        """
+        return frame to fit coordinate proportions
+        """
+        frame = cv2.imread(frame)
+        print(frame.shape)
+        cv2.imwrite('cv2img.png', frame)
+        frame = cv2.warpPerspective(frame, self.matrix,
+                                    (frame.shape[0], frame.shape[1]),
+                                    flags=cv2.INTER_NEAREST)
+        cv2.imwrite('frame_test.png', frame)
+        return pygame.image.frombuffer(frame.tobytes(), (frame.shape[1],frame.shape[0]),
+                                       'RGB')
+
+    def draw_roller_on_frame(self, frame):
+        """
+        Returns frame with roller drawn on it
+        """
+        frame = frame.blit(self.frames[self.current_index],
+                           (self.main_top_left))
+        self.current_index += 1
+        if self.current_index > self.index_max:
+            self.current_index = 0
+        return frame
+
 
 
 Board(GameParams(7, 5))

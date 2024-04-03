@@ -257,29 +257,43 @@ class RollField(object):
         self.main_top_right = (int(top_right[0]), int(top_right[1]))
         self.main_bottom_left = (int(bottom_left[0]), int(bottom_left[1]))
         self.main_bottom_right = (int(bottom_right[0]), int(bottom_right[1]))
+        width = max(self.main_top_left[0], self.main_top_right[0],
+                    self.main_bottom_left[0], self.main_bottom_right[0])
 
         self.width_start = (min(self.main_top_left[0],
                             self.main_bottom_left[0]))
         self.height_start = self.main_top_left[1]
         frame_vals = cv2.imread(frames[1])
         frame_vals = frame_vals.shape
+        print(frame_vals)
+        print((self.main_bottom_left[0]-self.width_start,
+                         self.main_bottom_left[1]-self.height_start),
+                        (self.main_bottom_right[0]-self.width_start+width_btm,
+                         self.main_bottom_right[1]-self.height_start),
+                        (self.main_top_left[0]-self.width_start,
+                         self.main_top_left[1]-self.height_start),
+                        (self.main_top_right[0]-self.width_start,
+                         self.main_top_right[1]-self.height_start))
+        print([0, frame_vals[1]], [width, frame_vals[1]],
+                        [0, 0], [width, 0])
+
 
         self.matrix = cv2.getPerspectiveTransform(
-            np.float32([[0, 0], [width_top, 0],
-                        [0, frame_vals[0]], [width_btm, frame_vals[0]]]),
+            np.float32([[0, frame_vals[0]], [frame_vals[1], frame_vals[0]],
+                        [0, 0], [frame_vals[1], 0]]),
+            np.float32(([
+                        (self.main_bottom_left[0]-self.width_start,
+                         self.main_bottom_left[1]-self.height_start),
 
-            np.float32([[self.main_top_left[0]-self.width_start,
-                        self.main_top_left[1]-self.height_start],
+                        (self.main_bottom_right[0]-self.width_start,
+                         self.main_bottom_right[1]-self.height_start),
 
-                        [self.main_top_right[0]-self.width_start,
-                        self.main_top_right[1]-self.height_start],
-
-                        [self.main_bottom_left[0]-self.width_start,
-                        self.main_bottom_left[1]-self.height_start],
-
-                        [self.main_bottom_right[0]-self.width_start,
-                        self.main_bottom_right[1]-self.height_start]])
-                        )
+                        (self.main_top_left[0]-self.width_start,
+                         self.main_top_left[1]-self.height_start),
+                         
+                        (self.main_top_right[0]-self.width_start,
+                         self.main_top_right[1]-self.height_start)
+                        ])))
         self.frames = [self.adjust_frame(frame) for frame in frames]
         self.index_max = len(self.frames)-1
         self.current_index = 0
@@ -292,8 +306,9 @@ class RollField(object):
         frame = cv2.warpPerspective(frame, self.matrix,
                                     (frame.shape[1], frame.shape[0]),
                                     flags=cv2.INTER_NEAREST)
-        return pygame.image.frombuffer(frame.tobytes(), (frame.shape[1],
-                                                         frame.shape[0]),
+        return pygame.image.frombuffer(frame.tobytes(),
+                                       (frame.shape[1],
+                                        frame.shape[0]),
                                        'RGB')
 
     def draw_roller_on_frame(self, frame):

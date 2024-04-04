@@ -46,9 +46,6 @@ class ColorSlides:
                 slots_up = -(active_slot_height // -self.width)
                 slots_down = -((self.height-active_slot_height) // -self.width)
 
-                print(color_id)
-                print(slots_up)
-                print(slots_down)
                 up_colors = [self.colors[::-1][(color_id + (slot_u)) -
                                                (((color_id+1+slot_u) //
                                                 (len(self.colors))) *
@@ -67,7 +64,7 @@ class ColorSlides:
 
                 self.create_image(color_id, frame_id,
                                   active_slot_width, active_slot_height,
-                                  color, reversed(up_colors), down_colors)
+                                  color, up_colors, down_colors)
 
     def create_image(self, color_index: int, frame_index: int,
                      active_slot_width, active_slot_height,
@@ -95,13 +92,7 @@ class ColorSlides:
                 list of colors(GameParams.Color) visible below
                 center color.(firs one closest to main color)
         """
-        print(list(c for c in [color.name for color in self.colors]))
-        for color_u in up_colors:
-            print(color_u.name)
-        print(f'*{color.name}*')
-        for color_d in down_colors:
-            print(color_d.name)
-        print()
+
         if len(str(color_index)) == 1:
             color_index = f'0{color_index}'
         if len(str(frame_index)) == 1:
@@ -130,7 +121,7 @@ class ColorSlides:
 
         center = [int(active_slot_width), int(active_slot_height)]
 
-        for color_u in up_colors:
+        for color_u in up_colors[::-1]:
             center[1] -= active_slot_width*2
             draw_color = color_u.value + (255, )
             draw.ellipse((center[0] - radius, center[1] - radius,

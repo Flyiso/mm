@@ -1,7 +1,10 @@
 {
     "cSpell.words": [
+        "blit",
         "fillvalue",
-        "Pygame"
+        "frombuffer",
+        "Pygame",
+        "tobytes"
     ],
     "window.zoomLevel": 0.2
 }

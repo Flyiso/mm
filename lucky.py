@@ -31,6 +31,7 @@ class Board:
         directory_path = os.path.join(os.getcwd(), 'frames')
         self.spin_frames_routes = [(os.path.join(directory_path, frame))
                                    for frame in os.listdir(directory_path)]
+        self.spin_frames_routes.sort()
         for field in range(int(self.board_width)):
             self.roll_fields.append(RollField(
                 top_left=(self.display_top_left[0] +
@@ -307,7 +308,7 @@ class RollField(object):
         frame = frame.blit(self.frames[self.current_index],
                            (self.width_start, self.height_start))
         self.current_index += 1
-        
+
         if self.current_index > self.index_max:
             self.current_index = 0
         return frame

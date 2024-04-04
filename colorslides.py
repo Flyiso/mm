@@ -45,18 +45,17 @@ class ColorSlides:
                     (self.width/2, self.height/2 + height_adjustment)
                 slots_up = -(active_slot_height // -self.width)
                 slots_down = -((self.height-active_slot_height) // -self.width)
-                up_colors = [self.colors[color_id-(slot+1)] if
-                             color_id-(slot+1) >= -(len(self.colors)) else
-                             self.colors[
-                                 (color_id-((slot)+1)) +
-                                 (len(self.colors)*(color_id-(slot+1)) //
-                                  len(self.colors))]
-                             for slot in range(int(slots_up))]
 
-                down_colors = [self.colors[color_id+(slot+1)] if
-                               color_id+slot+1 <= len(self.colors)-1 else
-                               self.colors[
-                                   (color_id+slot+1)-(len(self.colors))]
+                up_colors = [self.colors[
+                    (color_id-1-slot) +
+                    (abs((color_id-1-slot) //
+                         len(self.colors)) *
+                        len(self.colors))]
+                        for slot in range(int(slots_up))]
+                down_colors = [self.colors[(color_id+(slot+1)) -
+                                           (((color_id+1+slot) //
+                                            (len(self.colors)-1)) *
+                                            len(self.colors)-1)]
                                for slot in range(int(slots_down))]
 
                 self.create_image(color_id, frame_id,
@@ -84,7 +83,7 @@ class ColorSlides:
                 currently active color/center color of frame.
             up_colors(list[GameParams.Color]):
                 list of colors(GameParams.Color) visible above
-                center color.(firs one closest to main color)
+                center color.(first one closest to main color)
             down_colors(list[GameParams.COlor]):
                 list of colors(GameParams.Color) visible below
                 center color.(firs one closest to main color)

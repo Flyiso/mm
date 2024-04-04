@@ -6,7 +6,6 @@ active colors(how many different colors are active in game)
 """
 
 
-
 class Board:
     def __init__(self,
                  game_params: GameParams = GameParams()) -> None:

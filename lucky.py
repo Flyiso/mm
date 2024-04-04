@@ -79,7 +79,7 @@ class Board:
 
             # Cap the frame rate
             # pygame.time.Clock().tick(60)
-            clock.tick(30)
+            clock.tick(1)
 
         # Remove directory of images.
         if os.path.exists('frames'):
@@ -280,7 +280,7 @@ class RollField(object):
 
                         (self.main_top_left[0]-self.width_start,
                          self.main_top_left[1]-self.height_start),
-                         
+                    
                         (self.main_top_right[0]-self.width_start,
                          self.main_top_right[1]-self.height_start)
                         ])))
@@ -304,6 +304,7 @@ class RollField(object):
         """
         Returns frame with roller drawn on it
         """
+        print(self.current_index)
         frame = frame.blit(self.frames[self.current_index],
                            (self.width_start, self.height_start))
         self.current_index += 1
@@ -313,5 +314,4 @@ class RollField(object):
         return frame
 
 
-
-Board(GameParams(7, 5))
+Board(GameParams(3, 5))

@@ -30,7 +30,7 @@ class ColorSlides:
         height_adjust = [(((width/2)/5) * n) for n in range(0, 6)]
         for col in height_adjust[1:]:
             height_adjust.append(-col)
-        height_adjust.sort()
+        height_adjust.sort(reverse=True)
         self.height_adjust = height_adjust
         self.get_images()
 
@@ -40,7 +40,7 @@ class ColorSlides:
         each color can have to create images for animation.
         """
         for color_id, color in enumerate(self.colors):
-            for frame_id, height_adjustment in enumerate(self.height_adjust):
+            for frame_id, height_adjustment in enumerate(self.height_adjust[:-1]):
                 active_slot_width, active_slot_height = \
                     (self.width/2, self.height/2 + height_adjustment)
                 slots_up = -(active_slot_height // -self.width)

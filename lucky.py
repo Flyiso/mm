@@ -31,7 +31,9 @@ class Board:
         directory_path = os.path.join(os.getcwd(), 'frames')
         self.spin_frames_routes = [(os.path.join(directory_path, frame))
                                    for frame in os.listdir(directory_path)]
-        self.spin_frames_routes.sort()
+        self.spin_frames_routes.sort(reverse=True)
+        for route in self.spin_frames_routes:
+            print(route)
         for field in range(int(self.board_width)):
             self.roll_fields.append(RollField(
                 top_left=(self.display_top_left[0] +
@@ -80,7 +82,7 @@ class Board:
 
             # Cap the frame rate
             # pygame.time.Clock().tick(60)
-            clock.tick(1)
+            clock.tick(10)
 
         # Remove directory of images.
         if os.path.exists('frames'):

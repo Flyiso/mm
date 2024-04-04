@@ -15,7 +15,7 @@ class ColorSlides:
             active_colors (list[GameParams.Color]):
                     List of currently, in game, active colors.
                     List content should be color objects from
-                    Color class in game_values.py 
+                    Color class in game_values.py
             height (int):
                     height of the field to create images for.
                     set height of the image (from 0)
@@ -40,19 +40,17 @@ class ColorSlides:
         each color can have to create images for animation.
         """
         for color_id, color in enumerate(self.colors):
-            for frame_id, height_adjustment in enumerate(self.height_adjust[:-1]):
+            for frame_id, \
+                height_adjustment \
+                    in enumerate(self.height_adjust[:-1]):
                 active_slot_width, active_slot_height = \
                     (self.width/2, self.height/2 + height_adjustment)
                 slots_up = -(active_slot_height // -self.width)
                 slots_down = -((self.height-active_slot_height) // -self.width)
 
-                up_colors = [self.colors[::-1][(color_id + (slot_u)) -
-                                               (((color_id+1+slot_u) //
-                                                (len(self.colors))) *
-                                                len(self.colors))]
-                             for slot_u in range(2, int(slots_up)+2)]
-
-                print(color_id)
+                up_colors = [self.colors[slot % (len(self.colors))] for slot
+                             in range(
+                                 ((color_id)-int(slots_up)), color_id)]
 
                 down_colors = [self.colors[(color_id+(slot_d)) -
                                            (((color_id+1+slot_d) //
@@ -60,11 +58,9 @@ class ColorSlides:
                                             len(self.colors))]
                                for slot_d in range(1, int(slots_down)+1)]
 
-                print(color_id)
-
                 self.create_image(color_id, frame_id,
                                   active_slot_width, active_slot_height,
-                                  color, up_colors, down_colors)
+                                  color, reversed(up_colors), down_colors)
 
     def create_image(self, color_index: int, frame_index: int,
                      active_slot_width, active_slot_height,
@@ -77,7 +73,7 @@ class ColorSlides:
             color_index(int):
                 the index of the current color
             frame_index(int):
-                What index of current color/ allow 
+                What index of current color/ allow
                 one color to be valid during multiple frames.
             active_slot_width:
                 horizontal co-ordinate for active slot/color
@@ -104,13 +100,22 @@ class ColorSlides:
                           (0, 0, 0, 0))
 
         center = [int(active_slot_width), int(active_slot_height)]
-        radius = (active_slot_width*0.95)
+        radius = (active_slot_width*0.85)
         draw_color = color.value + (255,)
 
         draw = ImageDraw.Draw(image)
         draw.ellipse((center[0] - radius, center[1] - radius,
                      center[0] + radius, center[1] + radius),
                      fill=draw_color)
+
+        for color_u in up_colors:
+            center[1] -= (active_slot_width*2)
+            draw_color = color_u.value + (255, )
+            draw.ellipse((center[0] - radius, center[1] - radius,
+                         center[0] + radius, center[1] + radius),
+                         fill=draw_color)
+
+        center = [int(active_slot_width), int(active_slot_height)]
 
         for color_d in down_colors:
             center[1] += active_slot_width*2
@@ -119,14 +124,6 @@ class ColorSlides:
                          center[0] + radius, center[1] + radius),
                          fill=draw_color)
 
-        center = [int(active_slot_width), int(active_slot_height)]
-
-        for color_u in up_colors[::-1]:
-            center[1] -= active_slot_width*2
-            draw_color = color_u.value + (255, )
-            draw.ellipse((center[0] - radius, center[1] - radius,
-                         center[0] + radius, center[1] + radius),
-                         fill=draw_color)
         img_pathname = \
             f'{folder_path}/{color_index}_{frame_index}_{color.name}.png'
         image.save(img_pathname)

@@ -32,8 +32,6 @@ class Board:
         self.spin_frames_routes = [(os.path.join(directory_path, frame))
                                    for frame in os.listdir(directory_path)]
         self.spin_frames_routes.sort(reverse=True)
-        for route in self.spin_frames_routes:
-            print(route)
         for field in range(int(self.board_width)):
             self.roll_fields.append(RollField(
                 top_left=(self.display_top_left[0] +
@@ -316,4 +314,4 @@ class RollField(object):
         return frame
 
 
-Board(GameParams(9, 5))
+Board(GameParams(9, 7))

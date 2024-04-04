@@ -111,6 +111,9 @@ class ColorSlides:
         draw.ellipse((center[0] - radius, center[1] - radius,
                      center[0] + radius, center[1] + radius),
                      fill=draw_color)
+        draw.ellipse((center[0] - radius*0.33, center[1] - radius*0.33,
+                     center[0] + radius*0.33, center[1] + radius*0.33),
+                     fill=(0, 0, 0, 255))
 
         for color_u in up_colors:
             center[1] -= (active_slot_width*2)
@@ -136,7 +139,7 @@ class ColorSlides:
 class RollField(object):
     def __init__(self, top_left: tuple, top_right: tuple,
                  bottom_left: tuple, bottom_right: tuple,
-                 frames: list, update_rate: int = 225):
+                 frames: list):
         """
         create roll object with perspective transformed
         version of frame to make frame fit roll field.
@@ -156,6 +159,7 @@ class RollField(object):
                             self.main_bottom_right[0],
                             self.main_top_right[0]))
         self.height_start = self.main_top_left[1]
+        self.frame_paths = frames
         frame_vals = cv2.imread(frames[1])
         frame_vals = frame_vals.shape
 
@@ -202,7 +206,7 @@ class RollField(object):
             self.itter_interval += 1
             frame = frame.blit(self.frames[self.current_index],
                                (self.width_start, self.height_start))
-            if self.time != -1:
+            if self.spinning:
                 self.current_index += 1
             if self.current_index > self.index_max:
                 self.current_index = 0
@@ -223,6 +227,8 @@ class RollField(object):
             frame = frame.blit(self.frames[self.current_index],
                                (self.width_start, self.height_start))
             self.spinning = False
+            #print(sorted(self.frame_paths)[self.current_index])
+            print(self.frame_paths[self.current_index])
             return frame
 
     def stop_roller(self, time):

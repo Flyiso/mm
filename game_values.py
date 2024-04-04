@@ -57,11 +57,11 @@ class Color:
 
     @classmethod
     def red(cls):
-        return cls('red', (255, 0, 0))
+        return cls('red-255-0-0', (0, 0, 225))
 
     @classmethod
     def blue(cls):
-        return cls('blue', (0, 0, 255))
+        return cls('blue-0-0-255', (0, 0, 255))
 
     @classmethod
     def green(cls):
@@ -81,7 +81,7 @@ class Color:
 
     @classmethod
     def orange(cls):
-        return cls('orange', (255, 125, 0))
+        return cls('orange-255-125-0', (255, 125, 0))
 
     @classmethod
     def turquoise(cls):
@@ -89,7 +89,7 @@ class Color:
 
     @classmethod
     def lime(cls):
-        return cls('lime', (110, 220, 1))
+        return cls('lime', (130, 180, 1))
 
     @classmethod
     def magenta(cls):

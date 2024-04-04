@@ -141,10 +141,11 @@ class RollField(object):
         create roll object with perspective transformed
         version of frame to make frame fit roll field.
         """
-        self.time = False
+        self.time = 0
+        self.stop = False
         self.itter_interval = 0
+        self.spinning = True
         self.speed_modifier = (random.randint(45, 77))*0.01
-        self.stop_button_timer = 0
         self.main_top_left = (int(top_left[0]), int(top_left[1]))
         self.main_top_right = (int(top_right[0]), int(top_right[1]))
         self.main_bottom_left = (int(bottom_left[0]), int(bottom_left[1]))
@@ -194,43 +195,41 @@ class RollField(object):
         """
         Returns frame with roller drawn on it
         """
-
-        if time > 500 and self.time is False:
-            self.time = time/10
-            self.end_time = time
-            self.itter_interval = 0
-
-        if self.itter_interval > self.time and self.time > 0:
-            dist = ((time*(2+(self.speed_modifier*10))) -
-                    self.end_time)*0.00001
-            speed = (self.speed_modifier-dist)
-            self.time = (speed*(self.speed_modifier*100))-0.3
-            self.itter_interval = 0
-            frame = frame.blit(self.frames[self.current_index-1],
-                               (self.width_start, self.height_start))
-            return frame
-
-        elif 1 > self.time > 0:
-            frame = frame.blit(self.frames[self.current_index],
-                               (self.width_start, self.height_start))
-            self.current_index += 1
-            self.time = -1
-            if self.current_index > self.index_max:
-                self.current_index = 0
-            return frame
+        if self.stop is True and self.itter_interval >= self.time:
+            return self.slow_roller(frame, time)
 
         else:
             self.itter_interval += 1
             frame = frame.blit(self.frames[self.current_index],
                                (self.width_start, self.height_start))
-            if self.time > 0:
+            if self.time != -1:
                 self.current_index += 1
             if self.current_index > self.index_max:
                 self.current_index = 0
             return frame
 
-    def slow_down_roller_frame(self, time):
+    def slow_roller(self, frame, time):
+        if self.itter_interval > self.time and self.time > 0:
+            dist = ((time*(2+(self.speed_modifier*10))) -
+                    self.end_time)*0.00001
+            speed = (self.speed_modifier-dist)
+            self.time = abs(speed*(self.speed_modifier*100))-0.3
+            self.itter_interval = 0
+            frame = frame.blit(self.frames[self.current_index-1],
+                               (self.width_start, self.height_start))
+            return frame
+
+        else:
+            frame = frame.blit(self.frames[self.current_index],
+                               (self.width_start, self.height_start))
+            self.spinning = False
+            return frame
+
+    def stop_roller(self, time):
         """
         slow the frame down exponentially.
         """
-        pass
+        self.time = time/10
+        self.end_time = time
+        self.itter_interval = 0
+        self.stop = True

@@ -60,6 +60,14 @@ class Board:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
+                elif event.type == pygame.MOUSEBUTTONDOWN:
+                    if self.stop_area.collidepoint(event.pos):
+                        [roll_field.stop_roller(
+                            pygame.time.get_ticks())
+                            for roll_field in self.roll_fields]
+            if all(roll_field.spinning is False for
+                   roll_field in self.roll_fields):
+                print('all still')
             # draw background.
             screen.fill(self.black)
             screen = self.draw_grid(screen)
@@ -178,6 +186,7 @@ class Board:
         return screen
 
     def draw_buttons(self, screen):
+
         pygame.draw.rect(screen, self.green, (
             self.button_start_width, self.button_height,
             self.button_size, self.button_size), 0, 2)
@@ -237,6 +246,13 @@ class Board:
         self.button_size = self.screen_height//20
         self.button_start_width = self.screen_width-(self.button_size*3)
         self.button_end_width = self.button_start_width+(self.button_size*1.5)
+
+        self.stop_area = pygame.Rect(
+            self.button_end_width, self.button_height,
+            self.button_size, self.button_size)
+        self.start_area = pygame.Rect(
+            self.button_start_width, self.button_height,
+            self.button_size, self.button_size)
 
 
 Board(GameParams(9, 4))

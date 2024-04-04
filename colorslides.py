@@ -1,4 +1,8 @@
 import os
+import cv2
+import pygame
+import random
+import numpy as np
 from PIL import Image, ImageDraw
 
 
@@ -127,3 +131,106 @@ class ColorSlides:
         img_pathname = \
             f'{folder_path}/{color_index}_{frame_index}_{color.name}.png'
         image.save(img_pathname)
+
+
+class RollField(object):
+    def __init__(self, top_left: tuple, top_right: tuple,
+                 bottom_left: tuple, bottom_right: tuple,
+                 frames: list, update_rate: int = 225):
+        """
+        create roll object with perspective transformed
+        version of frame to make frame fit roll field.
+        """
+        self.time = False
+        self.itter_interval = 0
+        self.speed_modifier = (random.randint(45, 77))*0.01
+        self.stop_button_timer = 0
+        self.main_top_left = (int(top_left[0]), int(top_left[1]))
+        self.main_top_right = (int(top_right[0]), int(top_right[1]))
+        self.main_bottom_left = (int(bottom_left[0]), int(bottom_left[1]))
+        self.main_bottom_right = (int(bottom_right[0]), int(bottom_right[1]))
+
+        self.width_start = (min(self.main_top_left[0],
+                            self.main_bottom_left[0],
+                            self.main_bottom_right[0],
+                            self.main_top_right[0]))
+        self.height_start = self.main_top_left[1]
+        frame_vals = cv2.imread(frames[1])
+        frame_vals = frame_vals.shape
+
+        self.matrix = cv2.getPerspectiveTransform(
+            np.float32([[0, frame_vals[0]], [frame_vals[1], frame_vals[0]],
+                        [0, 0], [frame_vals[1], 0]]),
+            np.float32(([
+                        (self.main_bottom_left[0]-self.width_start,
+                         self.main_bottom_left[1]-self.height_start),
+
+                        (self.main_bottom_right[0]-self.width_start,
+                         self.main_bottom_right[1]-self.height_start),
+
+                        (self.main_top_left[0]-self.width_start,
+                         self.main_top_left[1]-self.height_start),
+
+                        (self.main_top_right[0]-self.width_start,
+                         self.main_top_right[1]-self.height_start)
+                        ])))
+        self.frames = [self.adjust_frame(frame) for frame in frames]
+        self.index_max = len(self.frames)-1
+        self.current_index = 0
+
+    def adjust_frame(self, frame):
+        """
+        return frame to fit coordinate proportions
+        """
+        frame = cv2.imread(frame, cv2.IMREAD_UNCHANGED)
+        frame = cv2.warpPerspective(frame, self.matrix,
+                                    (frame.shape[1], frame.shape[0]),
+                                    flags=cv2.INTER_NEAREST)
+        return pygame.image.frombuffer(frame.tobytes(),
+                                       frame.shape[1::-1],
+                                       'RGBA')
+
+    def draw_roller_on_frame(self, frame, time):
+        """
+        Returns frame with roller drawn on it
+        """
+
+        if time > 500 and self.time is False:
+            self.time = time/10
+            self.end_time = time
+            self.itter_interval = 0
+
+        if self.itter_interval > self.time and self.time > 0:
+            dist = ((time*(2+(self.speed_modifier*10))) -
+                    self.end_time)*0.00001
+            speed = (self.speed_modifier-dist)
+            self.time = (speed*(self.speed_modifier*100))-0.3
+            self.itter_interval = 0
+            frame = frame.blit(self.frames[self.current_index-1],
+                               (self.width_start, self.height_start))
+            return frame
+
+        elif 1 > self.time > 0:
+            frame = frame.blit(self.frames[self.current_index],
+                               (self.width_start, self.height_start))
+            self.current_index += 1
+            self.time = -1
+            if self.current_index > self.index_max:
+                self.current_index = 0
+            return frame
+
+        else:
+            self.itter_interval += 1
+            frame = frame.blit(self.frames[self.current_index],
+                               (self.width_start, self.height_start))
+            if self.time > 0:
+                self.current_index += 1
+            if self.current_index > self.index_max:
+                self.current_index = 0
+            return frame
+
+    def slow_down_roller_frame(self, time):
+        """
+        slow the frame down exponentially.
+        """
+        pass

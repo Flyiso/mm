@@ -1,13 +1,10 @@
-from colorslides import ColorSlides
+from colorslides import ColorSlides, RollField
 from game_values import GameParams
 from itertools import zip_longest
-import numpy as np
 import shutil
-import random
 import pygame
 import sys
 import os
-import cv2
 
 
 class Board:
@@ -23,7 +20,6 @@ class Board:
 
     def draw_board(self):
         pygame.init()
-        clock = pygame.time.Clock()
         info = pygame.display.Info()
         self.set_screen_values(info)
         ColorSlides(self.active_colors, self.field_height,
@@ -46,19 +42,17 @@ class Board:
                 bottom_right=(self.display_bottom_left[0] +
                               (self.roller_width_bottom * (field + 1)),
                               self.display_bottom_right[1]),
-                frames=self.spin_frames_routes,
-                width_top=int(self.roller_width_top),
-                width_btm=int(self.roller_width_bottom)))
+                frames=self.spin_frames_routes))
 
         screen = pygame.display.set_mode((self.screen_width,
                                          self.screen_height))
-        pygame.display.set_caption("Mastermind For lucky people")
+        pygame.display.set_caption("Mastermind for people with lots of luck.")
 
         self.black = (0, 0, 0)
-        self.gray = (125, 125, 241)
-        self.red = (225, 50, 50)
+        self.gray = (125, 125, 201)
+        self.red = (200, 55, 55)
         self.green = (50, 255, 25)
-        self.line_color = (225, 225, 225)
+        self.line_color = (205, 205, 205)
 
         running = True
         while running:
@@ -72,15 +66,14 @@ class Board:
             screen = self.draw_guesses(screen)
             screen = self.draw_background(screen)
             screen = self.draw_display(screen)
-            [roll_field.draw_roller_on_frame(screen) for
-             roll_field in self.roll_fields]
+            [roll_field.draw_roller_on_frame(screen, pygame.time.get_ticks())
+             for roll_field in self.roll_fields]
             screen = self.draw_roller_fields(screen)
             screen = self.draw_buttons(screen)
             pygame.display.flip()
 
             # Cap the frame rate
-            # pygame.time.Clock().tick(60)
-            clock.tick(10)
+            pygame.time.Clock().tick(225)
 
         # Remove directory of images.
         if os.path.exists('frames'):
@@ -171,7 +164,7 @@ class Board:
                          (int(self.display_bottom_right[0] +
                           self.display_top_right[0]) / 2,
                              int(self.display_bottom_left[1] +
-                                 self.display_top_left[1]) / 2))
+                                 self.display_top_left[1]) / 2), 5)
 
         for n in range(0, self.board_width):
             pygame.draw.line(screen, self.gray,
@@ -180,7 +173,7 @@ class Board:
                               (self.display_top_left[1])),
                              (self.display_bottom_left[0] +
                               (self.roller_width_bottom * n),
-                              self.display_bottom_left[1]), 3)
+                              self.display_bottom_left[1]), 7)
 
         return screen
 
@@ -246,72 +239,4 @@ class Board:
         self.button_end_width = self.button_start_width+(self.button_size*1.5)
 
 
-class RollField(object):
-    def __init__(self, top_left: tuple, top_right: tuple,
-                 bottom_left: tuple, bottom_right: tuple,
-                 frames: list, width_top: int, width_btm: int):
-        """
-        create roll object with perspective transformed
-        version of frame to make frame fit roll field
-        """
-        self.main_top_left = (int(top_left[0]), int(top_left[1]))
-        self.main_top_right = (int(top_right[0]), int(top_right[1]))
-        self.main_bottom_left = (int(bottom_left[0]), int(bottom_left[1]))
-        self.main_bottom_right = (int(bottom_right[0]), int(bottom_right[1]))
-        width = max(self.main_top_left[0], self.main_top_right[0],
-                    self.main_bottom_left[0], self.main_bottom_right[0])
-
-        self.width_start = (min(self.main_top_left[0],
-                            self.main_bottom_left[0],
-                            self.main_bottom_right[0],
-                            self.main_top_right[0]))
-        self.height_start = self.main_top_left[1]
-        frame_vals = cv2.imread(frames[1])
-        frame_vals = frame_vals.shape
-
-        self.matrix = cv2.getPerspectiveTransform(
-            np.float32([[0, frame_vals[0]], [frame_vals[1], frame_vals[0]],
-                        [0, 0], [frame_vals[1], 0]]),
-            np.float32(([
-                        (self.main_bottom_left[0]-self.width_start,
-                         self.main_bottom_left[1]-self.height_start),
-
-                        (self.main_bottom_right[0]-self.width_start,
-                         self.main_bottom_right[1]-self.height_start),
-
-                        (self.main_top_left[0]-self.width_start,
-                         self.main_top_left[1]-self.height_start),
-
-                        (self.main_top_right[0]-self.width_start,
-                         self.main_top_right[1]-self.height_start)
-                        ])))
-        self.frames = [self.adjust_frame(frame) for frame in frames]
-        self.index_max = len(self.frames)-1
-        self.current_index = 0
-
-    def adjust_frame(self, frame):
-        """
-        return frame to fit coordinate proportions
-        """
-        frame = cv2.imread(frame, cv2.IMREAD_UNCHANGED)
-        frame = cv2.warpPerspective(frame, self.matrix,
-                                    (frame.shape[1], frame.shape[0]),
-                                    flags=cv2.INTER_NEAREST)
-        return pygame.image.frombuffer(frame.tobytes(),
-                                       frame.shape[1::-1],
-                                       'RGBA')
-
-    def draw_roller_on_frame(self, frame):
-        """
-        Returns frame with roller drawn on it
-        """
-        frame = frame.blit(self.frames[self.current_index],
-                           (self.width_start, self.height_start))
-        self.current_index += 1
-
-        if self.current_index > self.index_max:
-            self.current_index = 0
-        return frame
-
-
-Board(GameParams(9, 7))
+Board(GameParams(9, 4))

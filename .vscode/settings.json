@@ -3,6 +3,7 @@
         "blit",
         "fillvalue",
         "frombuffer",
+        "itter",
         "Pygame",
         "tobytes"
     ],

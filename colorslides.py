@@ -46,21 +46,28 @@ class ColorSlides:
                 slots_up = -(active_slot_height // -self.width)
                 slots_down = -((self.height-active_slot_height) // -self.width)
 
-                up_colors = [self.colors[
-                    (color_id-1-slot) +
-                    (abs((color_id-1-slot) //
-                         len(self.colors)) *
-                        len(self.colors))]
-                        for slot in range(int(slots_up))]
-                down_colors = [self.colors[(color_id+(slot+1)) -
-                                           (((color_id+1+slot) //
-                                            (len(self.colors)-1)) *
-                                            len(self.colors)-1)]
-                               for slot in range(int(slots_down))]
+                print(color_id)
+                print(slots_up)
+                print(slots_down)
+                up_colors = [self.colors[::-1][(color_id + (slot_u)) -
+                                               (((color_id+1+slot_u) //
+                                                (len(self.colors))) *
+                                                len(self.colors))]
+                             for slot_u in range(2, int(slots_up)+2)]
+
+                print(color_id)
+
+                down_colors = [self.colors[(color_id+(slot_d)) -
+                                           (((color_id+1+slot_d) //
+                                            (len(self.colors))) *
+                                            len(self.colors))]
+                               for slot_d in range(1, int(slots_down)+1)]
+
+                print(color_id)
 
                 self.create_image(color_id, frame_id,
                                   active_slot_width, active_slot_height,
-                                  color, up_colors, down_colors)
+                                  color, reversed(up_colors), down_colors)
 
     def create_image(self, color_index: int, frame_index: int,
                      active_slot_width, active_slot_height,
@@ -88,6 +95,13 @@ class ColorSlides:
                 list of colors(GameParams.Color) visible below
                 center color.(firs one closest to main color)
         """
+        print(list(c for c in [color.name for color in self.colors]))
+        for color_u in up_colors:
+            print(color_u.name)
+        print(f'*{color.name}*')
+        for color_d in down_colors:
+            print(color_d.name)
+        print()
         if len(str(color_index)) == 1:
             color_index = f'0{color_index}'
         if len(str(frame_index)) == 1:

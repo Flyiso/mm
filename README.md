@@ -1,3 +1,3 @@
 # mm
 mastermind game with pygame
-TODO: check color values.
+TODO: make animation stop(and start) better

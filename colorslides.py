@@ -188,6 +188,8 @@ class RollField(object):
         return frame to fit coordinate proportions
         """
         frame = cv2.imread(frame, cv2.IMREAD_UNCHANGED)
+        print(frame.shape)
+        frame = cv2.cvtColor(frame, cv2.COLOR_BGRA2RGBA)
         frame = cv2.warpPerspective(frame, self.matrix,
                                     (frame.shape[1], frame.shape[0]),
                                     flags=cv2.INTER_NEAREST)

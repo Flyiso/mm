@@ -2,6 +2,7 @@ import os
 import cv2
 import pygame
 import random
+import shutil
 import numpy as np
 from PIL import Image, ImageDraw
 
@@ -27,6 +28,11 @@ class ColorSlides:
                     width of the field to create images for.
                     sets width of the image (from 0)
         """
+        # remove frames if any.
+        if os.path.exists('frames'):
+            directory_path = os.path.join(os.getcwd(), 'frames')
+            shutil.rmtree(directory_path)
+
         self.height = height
         self.width = width
         self.colors = [color() for color in active_colors]
@@ -188,7 +194,6 @@ class RollField(object):
         return frame to fit coordinate proportions
         """
         frame = cv2.imread(frame, cv2.IMREAD_UNCHANGED)
-        print(frame.shape)
         frame = cv2.cvtColor(frame, cv2.COLOR_BGRA2RGBA)
         frame = cv2.warpPerspective(frame, self.matrix,
                                     (frame.shape[1], frame.shape[0]),
@@ -229,8 +234,9 @@ class RollField(object):
             frame = frame.blit(self.frames[self.current_index],
                                (self.width_start, self.height_start))
             self.spinning = False
-            #print(sorted(self.frame_paths)[self.current_index])
-            print(self.frame_paths[self.current_index])
+            if self.current_index >= self.index_max:
+                self.current_index = 0
+            self.frame_name = self.frame_paths[self.current_index]
             return frame
 
     def stop_roller(self, time):
@@ -241,3 +247,11 @@ class RollField(object):
         self.end_time = time
         self.itter_interval = 0
         self.stop = True
+
+    def start_roller(self, time):
+        print('RESTART...')
+        self.time = 0
+        self.stop = False
+        self.itter_interval = 0
+        self.end_time = time
+        self.spinning = True

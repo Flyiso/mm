@@ -10,10 +10,10 @@ import os
 class Board:
     def __init__(self,
                  game_params: GameParams = GameParams()) -> None:
+        self.game_params = game_params
         self.board_width = game_params.n_slots
         self.board_height = game_params.n_turns
         self.active_colors = game_params.active_colors
-        self.win_colors = game_params.correct
         self.guesses = []
         self.roll_fields = []
         self.draw_board()
@@ -62,12 +62,33 @@ class Board:
                     running = False
                 elif event.type == pygame.MOUSEBUTTONDOWN:
                     if self.stop_area.collidepoint(event.pos):
-                        [roll_field.stop_roller(
-                            pygame.time.get_ticks())
-                            for roll_field in self.roll_fields]
+                        if all([roll_field.stop is False for roll_field in
+                                self.roll_fields]):
+                            print('stop!')
+                            [roll_field.stop_roller(pygame.time.get_ticks())
+                             for roll_field in self.roll_fields]
+                        else:
+                            print('cannot stop stopped field')
             if all(roll_field.spinning is False for
                    roll_field in self.roll_fields):
-                print('all still')
+                colors = [roll_field.frame_name[:-4].split('_')[-1] for
+                          roll_field in self.roll_fields]
+                hints = self.game_params.make_guess(colors)
+                new = []
+                for color in colors:
+                    for a_id, active in enumerate(self.active_colors):
+                        active = active()
+                        if active.name == color:
+                            new.append(active)
+                            print(len(self.active_colors))
+                            input('')
+                    if color not in (col.name for col in [col() for col in self.active_colors]):
+                        print(len(colors))
+                        print(f'missing: {color}?')
+                self.guesses.append(new)
+                [roll_field.start_roller(pygame.time.get_ticks()) for
+                 roll_field in self.roll_fields]
+
             # draw background.
             screen.fill(self.black)
             screen = self.draw_grid(screen)
@@ -121,16 +142,17 @@ class Board:
         Print guesses in grid.
         """
         for id_g, guess_sequence in enumerate(self.guesses, 0):
-            for id_c, c in enumerate([c() for c in guess_sequence], 0):
-                center_w = self.padding_lft_rgt+((id_c*self.cell_size)
-                                                 + self.cell_size/2)
-                center_h = ((self.padding_lft_rgt+(self.cell_size *
-                                                   self.board_height) -
-                            self.cell_size/2) -
-                            (self.cell_size*id_g))
-                pygame.draw.circle(screen, c.value,
-                                   (center_w, center_h),
-                                   (self.cell_size/2)*0.8)
+            for id_c, c in enumerate(guess_sequence, 0):
+                if c is not None:
+                    center_w = self.padding_lft_rgt+((id_c*self.cell_size)
+                                                     + self.cell_size/2)
+                    center_h = ((self.padding_lft_rgt+(self.cell_size *
+                                                       self.board_height) -
+                                self.cell_size/2) -
+                                (self.cell_size*id_g))
+                    pygame.draw.circle(screen, c.value,
+                                       (center_w, center_h),
+                                       (self.cell_size/2)*0.8)
         return screen
 
     def draw_background(self, screen):

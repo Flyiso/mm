@@ -16,11 +16,6 @@ class GameParams:
         self.n_slots = n_slots
         self.n_turns = n_turns
 
-        # REMOVE WHEN DONE
-        self.guesses = [
-            [random.choice(self.active_colors) for n in range(n_slots)]
-            for n in range(5)]
-
     @staticmethod
     def get_colors(n_colors):
         """
@@ -49,6 +44,29 @@ class GameParams:
         correct = [random.choice(self.active_colors) for cor in range(n_slots)]
         return correct
 
+    def make_guess(self, guess) -> dict:
+        """
+        compare input to self.correct.
+        returns number of guesses present in
+        self.correct and number of guesses both present
+        and number of guesses present AND in right position
+        """
+        correct = [color.name for color in [color() for color in self.correct]]
+        if correct == guess:
+            return {'correct': len(guess), 'present': 0}
+        score_dict = {'correct': 0, 'present': 0}
+        for c_id, (guess_c, correct_c) in enumerate(zip(guess, correct)):
+            if guess_c == correct_c:
+                score_dict['correct'] += 1
+                guess[c_id] = False
+                correct[c_id] = False
+
+        for guess_c in guess:
+            if guess_c in correct and guess_c is not False:
+                correct.remove(guess_c)
+                score_dict['present'] += 1
+        return score_dict
+
 
 class Color:
     def __init__(self, name, value):
@@ -57,11 +75,11 @@ class Color:
 
     @classmethod
     def red(cls):
-        return cls('red-255-0-0', (0, 0, 225))
+        return cls('red', (255, 0, 0))
 
     @classmethod
     def blue(cls):
-        return cls('blue-0-0-255', (0, 0, 255))
+        return cls('blue', (0, 0, 255))
 
     @classmethod
     def green(cls):
@@ -81,7 +99,7 @@ class Color:
 
     @classmethod
     def orange(cls):
-        return cls('orange-255-125-0', (255, 125, 0))
+        return cls('orange', (255, 125, 0))
 
     @classmethod
     def turquoise(cls):
